@@ -93,24 +93,25 @@ function Object.include(theClass, module, ... )
 end
 
 -- Returns true if aClass is a subclass of other, false otherwise
-function subclassOf(other, aClass)
-  if not _classes[aClass] or not _classes[other] then return false end
-  if aClass.superclass==nil then return false end -- aClass is Object, or a non-class
-  return aClass.superclass == other or subclassOf(other, aClass.superclass)
-end
-
--- Returns true if obj is an instance of aClass (or one of its subclasses) false otherwise
-function instanceOf(aClass, obj)
-  if not _classes[aClass] or type(obj)~='table' or not _classes[obj.class] then return false end
-  if obj.class==aClass then return true end
-  return subclassOf(aClass, obj.class)
+function Object.inherits(klass, other)
+  if not _classes[klass] or not _classes[other] then return false end
+  if klass.superclass==nil then return false end -- klass is Object, or a non-class
+  return klass.superclass == other or subclassOf(other, klass.superclass)
 end
 
 -- Returns true if the a module has already been included on a class (or a superclass of that class)
-function includes(module, aClass)
-  if not _classes[aClass] then return false end
-  if aClass.__modules[module]==module then return true end
-  return includes(module, aClass.superclass)
+function Object.includes(klass, module)
+  assert(_classes[klass], "Use class:includes instead of class.includes")
+  if not _classes[klass] then return false end
+  if klass.__modules[module]==module then return true end
+  return klass.superclass and klass.superclass:includes(module)
+end
+
+-- Returns true if obj is an instance of aClass (or one of its subclasses) false otherwise
+function Object.instanceof(self, aClass)
+  if not _classes[aClass] or type(self)~='table' or not _classes[self.class] then return false end
+  if self.class==aClass then return true end
+  return self.class:inherits(aClass)
 end
 
 -- Creates a new class named 'name'. Uses Object if no baseClass is specified. Additional parameters for compatibility
