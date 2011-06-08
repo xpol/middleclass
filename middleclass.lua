@@ -13,13 +13,13 @@ Object = { name = "Object", __modules = {} }
 Object.__classDict = {
   initialize = _nilf, destroy = _nilf, subclassed = _nilf,
   __tostring = function(instance) return ("instance of ".. instance.class.name) end, -- root of __tostring method,
-  __metamethods = { '__add', '__call', '__concat', '__div', '__le', '__lt', 
-    '__mod', '__mul', '__pow', '__sub', '__tostring', '__unm' 
+  __metamethods = { '__add', '__call', '__concat', '__div', '__le', '__lt',
+    '__mod', '__mul', '__pow', '__sub', '__tostring', '__unm'
   }
 }
 Object.__classDict.__index = Object.__classDict -- instances of Object need this
 
-setmetatable(Object, { 
+setmetatable(Object, {
   __index = Object.__classDict,    -- look up methods in the classDict
   __newindex = Object.__classDict, -- any new Object methods will be defined in classDict
   __call = Object.new,             -- allows instantiation via Object()
@@ -46,8 +46,8 @@ function Object.subclass(theClass, name)
   assert(_classes[theClass], "Use Class:subclass instead of Class.subclass")
   assert( type(name)=="string", "You must provide a name(string) for your class")
 
-  local theSubClass = { name = name, superclass = theClass, __classDict = {}, __modules={} }
-  
+  local theSubClass = { name = name, super = theClass, __classDict = {}, __modules={} }
+
   local dict = theSubClass.__classDict   -- classDict contains all the [meta]methods of the class
   dict.__index = dict                    -- It "points to itself" so instances can use it as a metatable.
   local superDict = theClass.__classDict -- The superclass' classDict
@@ -95,8 +95,8 @@ end
 -- Returns true if aClass is a subclass of other, false otherwise
 function Object.inherits(klass, other)
   if not _classes[klass] or not _classes[other] then return false end
-  if klass.superclass==nil then return false end -- klass is Object, or a non-class
-  return klass.superclass == other or subclassOf(other, klass.superclass)
+  if klass.super==nil then return false end -- klass is Object, or a non-class
+  return klass.super == other or klass.super:inherits(other)
 end
 
 -- Returns true if the a module has already been included on a class (or a superclass of that class)
@@ -104,7 +104,7 @@ function Object.includes(klass, module)
   assert(_classes[klass], "Use class:includes instead of class.includes")
   if not _classes[klass] then return false end
   if klass.__modules[module]==module then return true end
-  return klass.superclass and klass.superclass:includes(module)
+  return klass.super and klass.super:includes(module)
 end
 
 -- Returns true if obj is an instance of aClass (or one of its subclasses) false otherwise
